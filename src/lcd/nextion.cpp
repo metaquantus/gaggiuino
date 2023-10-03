@@ -490,6 +490,10 @@ int lcdGetManualFlowVol(void) {
   return myNex.readNumber("h0.val");
 }
 
+void lcdSetManualFlowVol(int val) {
+  myNex.writeNum("h0.val", val);
+}
+
 int lcdGetHomeScreenScalesEnabled(void) {
   return myNex.readNumber("scEn.val");
 }

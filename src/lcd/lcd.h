@@ -56,6 +56,7 @@ void lcdSetTemperatureDecimal(uint16_t val);
 void lcdTargetState(int val);
 void lcdSetWeight(float val);
 void lcdSetFlow(int val);
+void lcdSetManualFlowVol(int val);
 void lcdSetUpTime(float val);
 void lcdSetTankWaterLvl(uint16_t val);
 
