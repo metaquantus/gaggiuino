@@ -98,6 +98,9 @@ void setup(void) {
   led.setColor(9u, 0u, 9u); // 64171
 
   iwdcInit();
+
+  // Rotary Encoder init
+  rotaryEncoderInit();
 }
 
 //##############################################################################################################################
@@ -721,6 +724,21 @@ static void profiling(void) {
 }
 
 static void manualFlowControl(void) {
+#ifdef ROTARY_ENCODER
+  int32_t delta = getRotaryEncoderDelta();
+  if ( delta != 0 ) {
+    int32_t fvol = lcdGetManualFlowVol();
+    fvol -= delta * ROTARY_ENCODER_MANUAL_FLOW_SCALE;
+    if ( fvol > 130 ) { // max value of slider
+      fvol = 130;
+    }
+    if ( fvol < 0 ) {
+      fvol = 0;
+    }
+    // updates the display
+    lcdSetManualFlowVol(fvol);
+  }
+#endif
   if (brewActive) {
     openValve();
     float flow_reading = lcdGetManualFlowVol() / 10.f ;
