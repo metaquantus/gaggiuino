@@ -8,6 +8,8 @@
 
 #if defined SINGLE_BOARD
 ADS1015 ADS(0x48);
+#elif defined CATURRA
+extern CaturraADC ADS;
 #else
 ADS1115 ADS(0x48);
 #endif
@@ -17,10 +19,12 @@ float currentPressure;
 
 void adsInit(void) {
   ADS.begin();
+#ifndef CATURRA
   ADS.setGain(0);      // 6.144 volt
   ADS.setDataRate(4);  // fast
   ADS.setMode(0);      // continuous mode
   ADS.readADC(0);      // first read to trigger
+#endif
 }
 
 float getPressure(void) {  //returns sensor pressure data
@@ -35,6 +39,8 @@ float getPressure(void) {  //returns sensor pressure data
   previousPressure = currentPressure;
 #if defined SINGLE_BOARD
   currentPressure = (ADS.getValue() - 166) / 111.11f; // 12bit
+#elif defined CATURRA
+  currentPressure = ADS.getPressure();
 #else
   currentPressure = (ADS.getValue() - 2666) / 1777.8f; // 16bit
 #endif
@@ -43,10 +49,11 @@ float getPressure(void) {  //returns sensor pressure data
 }
 
 void getAdsError(void) {
+#ifndef CATURRA
   // Reset the hw i2c to try and recover comms
   // on fail to do so throw error
   i2cResetState();
-
+#endif
   // Throw error code on ADS malfunction/miswiring
   // Invalid Voltage error code: -100
   // Invalid gain error code: 255

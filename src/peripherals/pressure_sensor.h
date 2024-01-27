@@ -9,4 +9,8 @@ void i2cResetState(void);
 float getPressure(void);
 void getAdsError(void);
 
+#ifdef CATURRA
+#include "caturra_adc.h"
+#endif
+
 #endif

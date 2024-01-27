@@ -27,9 +27,18 @@ SystemState systemState;
 LED led;
 TOF tof;
 
+#ifdef USE_RTC
+STM32RTC& rtc = STM32RTC::getInstance();
+#endif
+
 void setup(void) {
   LOG_INIT();
   LOG_INFO("Gaggiuino (fw: %s) booting", AUTO_VERSION);
+
+#ifdef USE_RTC 
+  rtcInit();
+  LOG_INFO("RTC init");
+#endif
 
   // Various pins operation mode handling
   pinInit();
@@ -65,6 +74,14 @@ void setup(void) {
   led.setColor(9u, 0u, 9u); // WHITE
   // Init the tof sensor
   tof.init(currentState);
+
+#ifdef CATURRA
+  // LEDs turn on on LOW
+  digitalWrite(led1Pin, HIGH); // off
+  digitalWrite(led2Pin, HIGH); // off
+  digitalWrite(led3Pin, HIGH); // off
+  digitalWrite(led4Pin, HIGH); // off
+#endif
 
   // Initialising the saved values or writing defaults if first start
   eepromInit();
@@ -142,6 +159,8 @@ static void sensorReadSwitches(void) {
   currentState.brewSwitchState = brewState();
   currentState.steamSwitchState = steamState();
   currentState.hotWaterSwitchState = waterPinState() || (currentState.brewSwitchState && currentState.steamSwitchState); // use either an actual switch, or the GC/GCP switch combo
+  switchLED(brewLED, currentState.brewSwitchState);
+  switchLED(steamLED,currentState.steamSwitchState);
 }
 
 static void sensorsReadTemperature(void) {
@@ -781,6 +800,7 @@ static void brewDetect(void) {
   }
 }
 
+
 static void brewParamsReset(void) {
   currentState.tarePending = true;
   currentState.shotWeight  = 0.f;
@@ -846,7 +866,7 @@ static inline void sysHealthCheck(float pressureThreshold) {
   }
 
   //Releasing the excess pressure after steaming or brewing if necessary
-  #if defined LEGO_VALVE_RELAY || defined SINGLE_BOARD
+  #if defined LEGO_VALVE_RELAY || defined SINGLE_BOARD || defined CATURRA
 
   // No point going through the whole thing if this first condition isn't met.
   if (currentState.brewSwitchState || currentState.steamSwitchState || currentState.hotWaterSwitchState) {
@@ -907,7 +927,7 @@ static unsigned long getTimeSinceInit(void) {
 }
 
 static void fillBoiler(void) {
-  #if defined LEGO_VALVE_RELAY || defined SINGLE_BOARD
+  #if defined LEGO_VALVE_RELAY || defined SINGLE_BOARD || defined CATURRA
 
   if (systemState.startupInitFinished) {
     return;
@@ -968,7 +988,12 @@ static void fillBoilerUntilThreshod(unsigned long elapsedTime) {
 }
 
 static void updateStartupTimer(void) {
+#ifdef USE_RTC
+  // use real time
+  lcdSetUpTime(rtc.getHours() * 3600L + rtc.getMinutes() * 60L + rtc.getSeconds());
+#else
   lcdSetUpTime(getTimeSinceInit() / 1000);
+#endif
 }
 
 static void cpsInit(eepromValues_t &eepromValues) {
@@ -982,6 +1007,28 @@ static void cpsInit(eepromValues_t &eepromValues) {
   } else if (cps > 0) { // 50 Hz
     eepromValues.powerLineFrequency = 50u;
   }
+}
+
+static void rtcInit() {
+#ifdef USE_RTC
+  // Select RTC clock source: external 32.768KHz chrystal
+  rtc.setClockSource(STM32RTC::LSE_CLOCK);
+
+  rtc.begin(); // initialize RTC 24H format
+
+  // Set the time
+  /*
+  rtc.setHours(hours);
+  rtc.setMinutes(minutes);
+  rtc.setSeconds(seconds);
+
+  // Set the date
+  rtc.setWeekDay(weekDay);
+  rtc.setDay(day);
+  rtc.setMonth(month);
+  rtc.setYear(year);
+  */
+#endif
 }
 
 static void doLed(void) {

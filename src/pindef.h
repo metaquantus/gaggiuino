@@ -3,6 +3,41 @@
 #define PINDEF_H
 
 // STM32F4 pins definitions
+#ifdef CATURRA
+// SPI2
+#define thermoDO      PB14
+#define thermoDI      PB15 // not used
+#define thermoCS      PB12
+#define thermoCLK     PB13
+
+#define zcPin         PB5
+
+#if defined INT_RELAY
+#define relayPin      PC5
+#else
+#define relayPin      PC9  // Ext R1
+#endif
+#define dimmerPin     PC11
+#define valvePin      PB4
+
+#define brewPin       PC6
+#define steamPin      PC7
+#define waterPin      PC8
+// analog read
+#define pressurePin   PA0
+
+#define led1Pin       PC0
+#define led2Pin       PC1
+#define led3Pin       PC2
+#define led4Pin       PC3
+
+#define brewLED       led3Pin
+#define steamLED      led4Pin
+#define brewTempLED   led1Pin
+#define steamTempLED  led2Pin
+
+#else
+
 #define thermoDO      PB4
 #define thermoDI      PA7 // not used
 #define thermoCS      PA6
@@ -18,6 +53,14 @@
 #define waterPin      PB15
 #else
 #define waterPin      PA12
+#endif
+
+#define brewLED       PNUM_NOT_DEFINED
+#define steamLED      PNUM_NOT_DEFINED
+#define brewTempLED   PNUM_NOT_DEFINED
+#define steamTempLED  PNUM_NOT_DEFINED
+
+
 #endif
 
 #ifdef PCBV2

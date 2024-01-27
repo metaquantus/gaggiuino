@@ -5,11 +5,15 @@
 #include <Arduino.h>
 #include <SimpleKalmanFilter.h>
 
+#ifdef USE_RTC
+#include <STM32RTC.h>
+#endif
 #include "log.h"
 #include "eeprom_data/eeprom_data.h"
 #include "lcd/lcd.h"
 #include "peripherals/internal_watchdog.h"
 #include "peripherals/pump.h"
+#include "peripherals/caturra_adc.h"
 #include "peripherals/pressure_sensor.h"
 #include "peripherals/scales.h"
 #include "peripherals/peripherals.h"
